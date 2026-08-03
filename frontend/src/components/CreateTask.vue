@@ -1,13 +1,24 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import {
-  BModal,
-  BForm,
-  BFormGroup,
-  BFormInput,
-  BFormSelect,
-  BButton
-} from 'bootstrap-vue-next'
+  DialogRoot,
+  DialogPortal,
+  DialogOverlay,
+  DialogContent,
+  DialogTitle,
+  DialogClose
+} from 'radix-vue'
+import { X } from 'lucide-vue-next'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export interface NewTaskPayload {
   name: string
@@ -94,108 +105,125 @@ const handleSubmit = () => {
 </script>
 
 <template>
-  <BModal
-    v-model="isVisible"
-    title="Nova Tarefa"
-    centered
-    header-class="border-bottom-0 pb-0"
-    footer-class="border-top-0 pt-0"
-  >
-    <BForm id="create-task-form" @submit.prevent="handleSubmit">
-      <!-- Nome da Tarefa -->
-      <BFormGroup
-        label="Nome da Tarefa"
-        label-for="task-name"
-        class="mb-3 fw-semibold text-secondary"
+  <DialogRoot v-model:open="isVisible">
+    <DialogPortal>
+      <DialogOverlay class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 animate-in fade-in duration-200" />
+      <DialogContent
+        class="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white p-6 shadow-2xl z-50 border border-slate-100 animate-in zoom-in-95 fade-in duration-200"
       >
-        <BFormInput
-          id="task-name"
-          v-model="name"
-          placeholder="Ex: Refatorar componente de tabela..."
-          required
-        />
-      </BFormGroup>
-
-      <!-- Grid Categoria e Prioridade -->
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <BFormGroup
-            label="Categoria"
-            label-for="task-category"
-            class="fw-semibold text-secondary"
-          >
-            <BFormSelect
-              id="task-category"
-              v-model="category"
-              :options="categoryOptions"
-              required
-            />
-          </BFormGroup>
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+          <DialogTitle class="text-lg font-bold text-slate-800 tracking-tight">
+            Nova Tarefa
+          </DialogTitle>
+          <DialogClose as-child>
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-8 w-8 text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+            >
+              <X :size="18" />
+            </Button>
+          </DialogClose>
         </div>
 
-        <div class="col-md-6 mb-3">
-          <BFormGroup
-            label="Prioridade"
-            label-for="task-priority"
-            class="fw-semibold text-secondary"
-          >
-            <BFormSelect
-              id="task-priority"
-              v-model="priority"
-              :options="priorityOptions"
+        <form @submit.prevent="handleSubmit" class="space-y-4">
+          <!-- Nome da Tarefa -->
+          <div>
+            <label for="task-name" class="block text-xs font-semibold text-slate-700 mb-1">
+              Nome da Tarefa
+            </label>
+            <Input
+              id="task-name"
+              v-model="name"
+              type="text"
+              placeholder="Ex: Refatorar componente de tabela..."
               required
             />
-          </BFormGroup>
-        </div>
-      </div>
+          </div>
 
-      <!-- Grid Data Criada e Data de Prazo -->
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <BFormGroup
-            label="Data Criada"
-            label-for="task-created-date"
-            class="fw-semibold text-secondary"
-          >
-            <BFormInput
-              id="task-created-date"
-              v-model="createdDate"
-              type="date"
-              required
-            />
-          </BFormGroup>
-        </div>
+          <!-- Categoria e Prioridade -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">
+                Categoria
+              </label>
+              <Select v-model="category">
+                <SelectTrigger class="w-full">
+                  <SelectValue placeholder="Selecione a categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem v-for="opt in categoryOptions" :key="opt.value" :value="opt.value">
+                      {{ opt.text }}
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div class="col-md-6 mb-3">
-          <BFormGroup
-            label="Data de Prazo"
-            label-for="task-due-date"
-            class="fw-semibold text-secondary"
-          >
-            <BFormInput
-              id="task-due-date"
-              v-model="dueDate"
-              type="date"
-              required
-            />
-          </BFormGroup>
-        </div>
-      </div>
-    </BForm
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">
+                Prioridade
+              </label>
+              <Select v-model="priority">
+                <SelectTrigger class="w-full">
+                  <SelectValue placeholder="Selecione a prioridade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem v-for="opt in priorityOptions" :key="opt.value" :value="opt.value">
+                      {{ opt.text }}
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-    <!-- Footer oficial do BModal via slot -->
-    <template #modal-footer="{ cancel }">
-      <BButton variant="light" @click="cancel()">
-        Cancelar
-      </BButton>
-      <BButton
-        type="submit"
-        form="create-task-form"
-        variant="success"
-        class="fw-semibold px-4"
-      >
-        Criar Tarefa
-      </BButton>
-    </template>
-  </BModal>
+          <!-- Data Criada e Data de Prazo -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="task-created-date" class="block text-xs font-semibold text-slate-700 mb-1">
+                Data Criada
+              </label>
+              <Input
+                id="task-created-date"
+                v-model="createdDate"
+                type="date"
+                required
+              />
+            </div>
+
+            <div>
+              <label for="task-due-date" class="block text-xs font-semibold text-slate-700 mb-1">
+                Data de Prazo
+              </label>
+              <Input
+                id="task-due-date"
+                v-model="dueDate"
+                type="date"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- Buttons -->
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-6">
+            <Button
+              type="button"
+              variant="outline"
+              @click="isVisible = false"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+            >
+              Criar Tarefa
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </DialogPortal>
+  </DialogRoot>
 </template>

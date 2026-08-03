@@ -8,13 +8,12 @@ const routes: Array<RouteRecordRaw> = [
         path: '/',
         name: 'Login',
         component: Login,
-        meta: { requiresGuest: true }
     },
     {
         path: '/dashboard',
         name: 'Dashboard',
         component: Dashboard,
-        meta: { requiresAuth: true }
+        
     },
 ]
 

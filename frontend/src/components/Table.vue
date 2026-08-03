@@ -1,16 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import {
-  BFormCheckbox,
-  BButton,
-  BBadge
-} from 'bootstrap-vue-next'
-import {
   ArrowUpDown,
   CheckCircle2,
   Trash2,
 } from 'lucide-vue-next'
 import type { NewTaskPayload } from './CreateTask.vue'
+import { Button } from '@/components/ui/button'
 
 export interface TaskItem {
   id: number
@@ -127,7 +123,6 @@ const deleteSelected = () => {
   tasks.value = tasks.value.filter((t) => !t.completed)
 }
 
-// Método para adicionar nova tarefa criada pelo modal
 const addNewTask = (payload: NewTaskPayload) => {
   const newTask: TaskItem = {
     id: Date.now(),
@@ -147,122 +142,121 @@ defineExpose({
 </script>
 
 <template>
-  <div class="task-table-card card border-0 shadow-sm rounded-3 overflow-hidden">
+  <div class="bg-white border border-slate-200 overflow-hidden">
     <!-- Action Bar / Top Toolbar -->
-    <div
-      class="top-action-bar bg-light px-3 py-2 border-bottom d-flex flex-column flex-md-row justify-content-between align-items-center gap-2"
-    >
-      <div class="d-flex align-items-center gap-2 flex-wrap w-100 w-md-auto justify-content-center justify-content-md-start">
-        <span class="small fw-semibold text-white me-1">
+    <div class="bg-[#4d4c51] px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
+      <div class="flex items-center gap-2.5 flex-wrap w-full sm:w-auto">
+        <span class="text-xs font-medium text-slate-200 flex items-center gap-1.5">
           Ações
-          <span v-if="selectedCount > 0" class="badge bg-secondary rounded-pill ms-1">
-            {{ selectedCount }}
+          <span v-if="selectedCount > 0" class="text-emerald-400 font-bold text-[11px]">
+            ({{ selectedCount }})
           </span>:
         </span>
 
-        <!-- Botões diretos de Ação -->
-        <BButton
-          variant="outline-light"
+        <!-- Botões diretos de Ação usando Shadcn Button -->
+        <Button
+          variant="outline"
           size="sm"
-          class="d-flex align-items-center gap-1 text-sm rounded-2"
+          class="h-8 gap-1.5 text-xs text-white border-slate-500 bg-transparent hover:bg-white/10 hover:text-white"
           :disabled="selectedCount === 0"
           @click="markSelectedAsComplete"
         >
           <CheckCircle2 :size="15" />
           <span>Concluir</span>
-        </BButton>
+        </Button>
 
-        <BButton
-          variant="outline-light"
+        <Button
+          variant="destructive"
           size="sm"
-          class="d-flex align-items-center gap-1 text-sm rounded-2"
+          class="h-8 gap-1.5 text-xs"
           :disabled="selectedCount === 0"
           @click="deleteSelected"
         >
           <Trash2 :size="15" />
-          <span>Excluir</span>
-        </BButton>
+        </Button>
       </div>
     </div>
 
     <!-- Tabela -->
-    <div class="table-responsive">
-      <table class="table align-middle mb-0 custom-task-table">
-        <thead class="table-dark-header">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm border-collapse">
+        <thead class="bg-[#4d4c51] text-white text-xs font-semibold uppercase tracking-wider border-t border-[#5f5e63]">
           <tr>
-            <th style="width: 48px;" class="text-center py-3">
-              <BFormCheckbox v-model="isAllSelected" class="custom-checkbox" />
+            <th class="w-12 text-center py-3.5 px-3">
+              <input
+                type="checkbox"
+                v-model="isAllSelected"
+                class="w-4 h-4 border-slate-400 text-emerald-500 focus:ring-emerald-500 cursor-pointer accent-emerald-500"
+              />
             </th>
-            <th class="py-3">
-              <div class="d-flex align-items-center gap-1 cursor-pointer">
+            <th class="py-3.5 px-4">
+              <div class="flex items-center gap-1.5 cursor-pointer hover:text-white">
                 <ArrowUpDown :size="14" class="opacity-75" />
                 <span>Nome</span>
               </div>
             </th>
-            <th class="py-3" style="min-width: 150px; width: 200px;">
-              <div class="d-flex align-items-center gap-1 cursor-pointer">
+            <th class="py-3.5 px-4 w-48">
+              <div class="flex items-center gap-1.5 cursor-pointer hover:text-white">
                 <ArrowUpDown :size="14" class="opacity-75" />
                 <span>Categoria</span>
               </div>
             </th>
-            <th class="py-3 text-center" style="min-width: 100px; width: 120px;">Prioridade</th>
-            <th class="py-3 text-center" style="min-width: 110px; width: 130px;">Data</th>
-            <th class="py-3 text-center" style="min-width: 110px; width: 130px;">Expira</th>
+            <th class="py-3.5 px-4 text-center w-32">Prioridade</th>
+            <th class="py-3.5 px-4 text-center w-32">Data</th>
+            <th class="py-3.5 px-4 text-center w-32">Expira</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="divide-y divide-slate-100 bg-white">
           <tr
             v-for="task in filteredTasks"
             :key="task.id"
-            :class="{ 'row-selected': task.completed }"
+            class="transition hover:bg-slate-50"
+            :class="{ 'bg-emerald-50/50 hover:bg-emerald-50!': task.completed }"
           >
-            <td class="text-center py-3">
-              <BFormCheckbox v-model="task.completed" class="custom-checkbox" />
+            <td class="text-center py-3.5 px-3">
+              <input
+                type="checkbox"
+                v-model="task.completed"
+                class="w-4 h-4 border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer accent-emerald-600"
+              />
             </td>
-            <td class="py-3">
-              <div class="d-flex align-items-center gap-2 flex-wrap">
-                <BBadge
-                  v-if="task.progress"
-                  bg-color="#00c9a7"
-                  class="progress-badge py-1 px-2 text-white fw-bold"
-                >
-                  {{ task.progress }}
-                </BBadge>
+            <td class="py-3.5 px-4">
+              <div class="flex items-center gap-2.5 flex-wrap">
                 <span
-                  class="task-name text-break"
-                  :class="{ 'text-muted text-decoration-line-through': task.completed }"
+                  class="text-slate-800 font-medium"
+                  :class="{ 'text-slate-400 line-through': task.completed }"
                 >
                   {{ task.name }}
                 </span>
               </div>
             </td>
-            <td class="py-3">
-              <span class="badge-category">
+            <td class="py-3.5 px-4 text-start">
+              <span class="inline-block text-slate-600 text-xs font-medium min-w-28">
                 {{ task.category }}
               </span>
             </td>
-            <td class="py-3 text-center">
+            <td class="py-3.5 px-4 text-start">
               <span
-                class="badge-priority"
+                class="inline-block text-xs font-semibold text-center border px-2 py-1 w-20"
                 :class="{
-                  'priority-high': task.priority === 'Alta',
-                  'priority-normal': task.priority === 'Normal',
-                  'priority-low': task.priority === 'Baixa'
+                  'text-red-600 border-red-600': task.priority === 'Alta',
+                  'text-amber-600 border-amber-600': task.priority === 'Normal',
+                  'text-slate-500 border-slate-400': task.priority === 'Baixa'
                 }"
               >
                 {{ task.priority }}
               </span>
             </td>
-            <td class="py-3 text-center text-secondary small">
+            <td class="py-3.5 px-4 text-center text-slate-500 text-xs font-medium">
               {{ task.date }}
             </td>
-            <td class="py-3 text-center text-secondary small">
-              {{ task.date }}
+            <td class="py-3.5 px-4 text-center text-slate-500 text-xs font-medium">
+              {{ task.dateExpire }}
             </td>
           </tr>
 
           <tr v-if="filteredTasks.length === 0">
-            <td colspan="5" class="text-center py-4 text-muted">
+            <td colspan="6" class="text-center py-8 text-slate-400 text-sm">
               Nenhuma atividade encontrada.
             </td>
           </tr>
@@ -271,82 +265,3 @@ defineExpose({
     </div>
   </div>
 </template>
-
-<style scoped>
-.custom-task-table {
-  font-size: 0.9rem;
-}
-
-.top-action-bar {
-  background-color: #43414e !important;
-}
-
-.table-dark-header {
-  background-color: #3b4252;
-  color: #eceff4;
-}O rodapé duplicado foi removido em
-
-.table-dark-header th {
-  background-color: #3b4252 !important;
-  color: #eceff4 !important;
-  font-weight: 600;
-  border-bottom: none;
-  white-space: nowrap;
-}
-
-.row-selected {
-  background-color: #e6f7f3 !important;
-}
-
-.row-selected td {
-  background-color: #e6f7f3 !important;
-}
-
-.progress-badge {
-  background-color: #00c9a7;
-  font-size: 0.75rem;
-  border-radius: 4px;
-  width: 48px;
-  display: inline-block;
-  text-align: center;
-}
-
-.badge-category {
-  background-color: #f0f2f5;
-  color: #495057;
-  font-size: 0.8rem;
-  font-weight: 500;
-  display: inline-block;
-  min-width: 120px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  text-align: center;
-}
-
-.badge-priority {
-  background-color: #e5e9f0;
-  color: #4c566a;
-  font-size: 0.8rem;
-  font-weight: 600;
-  display: inline-block;
-  width: 75px;
-  padding: 4px 0;
-  border-radius: 6px;
-  text-align: center;
-}
-
-.page-num-btn {
-  color: #4c566a;
-  font-weight: 500;
-  font-size: 0.85rem;
-}
-
-.page-num-btn.active {
-  color: #00c9a7;
-  font-weight: 700;
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-</style>
