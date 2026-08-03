@@ -12,14 +12,27 @@ import {
   BFormInput,
   BButton,
 } from 'bootstrap-vue-next'
+import { AuthService } from '../services/AuthService'
 
 const email = ref('')
 const password = ref('')
 const router = useRouter()
+const errorMessages = ref('');
 
-const handleLogin = () => {
-  if (email.value && password.value) {
-    router.push('/dashboard')
+async function handleLogin() {
+  try {
+    errorMessages.value = '';
+
+    await AuthService.login({
+      email: email.value,
+      password: password.value,
+    });
+
+    router.push('/dashboard');
+
+  } catch (error: any) {
+    console.error("Login failed:", error.message);
+    errorMessages.value = error.message;
   }
 }
 </script>
@@ -36,39 +49,16 @@ const handleLogin = () => {
               </div>
 
               <BForm @submit.prevent="handleLogin">
-                <BFormGroup
-                  label="E-mail"
-                  label-for="email-input"
-                  class="mb-3 fw-medium text-secondary"
-                >
-                  <BFormInput
-                    id="email-input"
-                    v-model="email"
-                    type="email"
-                    placeholder="seu.email@exemplo.com"
-                    required
-                  />
+                <BFormGroup label="E-mail" label-for="email-input" class="mb-3 fw-medium text-secondary">
+                  <BFormInput id="email-input" v-model="email" type="email" placeholder="seu.email@exemplo.com"
+                    required />
                 </BFormGroup>
 
-                <BFormGroup
-                  label="Senha"
-                  label-for="password-input"
-                  class="mb-3 fw-medium text-secondary"
-                >
-                  <BFormInput
-                    id="password-input"
-                    v-model="password"
-                    type="password"
-                    placeholder="••••••••"
-                    required
-                  />
+                <BFormGroup label="Senha" label-for="password-input" class="mb-3 fw-medium text-secondary">
+                  <BFormInput id="password-input" v-model="password" type="password" placeholder="••••••••" required />
                 </BFormGroup>
 
-                <BButton
-                  type="submit"
-                  variant="primary"
-                  class="w-100 py-2 fw-semibold"
-                >
+                <BButton type="submit" variant="primary" class="w-100 py-2 fw-semibold">
                   Entrar
                 </BButton>
               </BForm>
