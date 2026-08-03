@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { User } from './dto/user.model';
+import { AuthResponse } from './dto/auth-response.dto';
 
 @Resolver()
 export class AuthResolver {
@@ -13,7 +14,7 @@ export class AuthResolver {
         return this.authService.register(register);
     }
 
-    @Mutation(() => User)
+    @Mutation(() => AuthResponse)
     async login(@Args('loginInput') login: LoginDto){
         return this.authService.login(login);
     }
