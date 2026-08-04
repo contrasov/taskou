@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { AuthService } from '../services/AuthService'
+import { AuthService } from '../api/AuthService'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 

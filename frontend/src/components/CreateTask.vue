@@ -19,14 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import type { Task} from '@/api/TaskService'
 
-export interface NewTaskPayload {
-  name: string
-  category: string
-  priority: 'Alta' | 'Normal' | 'Baixa'
-  createdDate: string
-  dueDate: string
-}
 
 const props = defineProps<{
   modelValue: boolean
@@ -34,7 +28,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
-  (e: 'create-task', payload: NewTaskPayload): void
+  (e: 'create-task', payload: Task): void
 }>()
 
 const today = new Date().toISOString().split('T')[0]
@@ -92,11 +86,12 @@ const handleSubmit = () => {
   }
 
   emit('create-task', {
-    name: name.value,
+    title: name.value,
     category: category.value,
     priority: priority.value,
-    createdDate: formatDate(createdDate.value),
-    dueDate: formatDate(dueDate.value)
+    startDate: formatDate(createdDate.value),
+    endDate: formatDate(dueDate.value),
+    finished: false
   })
 
   resetForm()

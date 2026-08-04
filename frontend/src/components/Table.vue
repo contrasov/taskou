@@ -1,23 +1,12 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import {
   ArrowUpDown,
   CheckCircle2,
   Trash2,
 } from 'lucide-vue-next'
-import type { NewTaskPayload } from './CreateTask.vue'
 import { Button } from '@/components/ui/button'
-
-export interface TaskItem {
-  id: number
-  name: string
-  category: string
-  priority: 'Alta' | 'Normal' | 'Baixa'
-  date: string
-  dateExpire: string
-  completed: boolean
-  progress?: string | null
-}
+import { TaskService, type Task} from '@/api/TaskService.ts'
 
 const props = withDefaults(
   defineProps<{
@@ -27,114 +16,70 @@ const props = withDefaults(
     searchQuery: ''
   }
 )
-
-const tasks = ref<TaskItem[]>([
-  {
-    id: 1,
-    name: 'Finalizar documentação do módulo de usuários.',
-    category: 'Documentação',
-    priority: 'Alta',
-    date: '24/12/2026',
-    dateExpire: '24/12/2026',
-    completed: false
-  },
-  {
-    id: 2,
-    name: 'Revisar Pull Requests pendentes no repositório.',
-    category: 'Code Review',
-    priority: 'Alta',
-    date: '07/01/2026',
-    dateExpire: '07/01/2026',
-    completed: false
-  },
-  {
-    id: 3,
-    name: 'Atualizar dependências do projeto e testar compilação.',
-    category: 'Infraestrutura',
-    priority: 'Alta',
-    date: '07/01/2026',
-    dateExpire: '07/01/2026',
-    completed: false,
-    progress: '74%'
-  },
-  {
-    id: 4,
-    name: 'Desenhar mockup das telas de relatórios.',
-    category: 'Design',
-    priority: 'Normal',
-    date: '19/01/2026',
-    dateExpire: '19/01/2026',
-    completed: true
-  },
-  {
-    id: 5,
-    name: 'Configurar servidor de homologação e CI/CD.',
-    category: 'DevOps',
-    priority: 'Baixa',
-    date: '11/02/2026',
-    dateExpire: '11/02/2026',
-    completed: false,
-    progress: '32%'
-  },
-  {
-    id: 6,
-    name: 'Realizar testes de carga e desempenho na API.',
-    category: 'Testes',
-    priority: 'Alta',
-    date: '24/02/2026',
-    dateExpire: '24/02/2026',
-    completed: false
-  }
-])
+const tasks = ref<Task[]>([])
 
 const filteredTasks = computed(() => {
+  if (!tasks.value) return []
   if (!props.searchQuery) return tasks.value
   const query = props.searchQuery.toLowerCase()
   return tasks.value.filter(
     (task) =>
-      task.name.toLowerCase().includes(query) ||
+      task.title.toLowerCase().includes(query) ||
       task.category.toLowerCase().includes(query)
   )
 })
 
 const selectedCount = computed(() => {
-  return tasks.value.filter((t) => t.completed).length
+  return (tasks.value || []).filter((t) => t.finished).length
 })
 
 const isAllSelected = computed({
   get: () =>
-    filteredTasks.value.length > 0 &&
-    filteredTasks.value.every((t) => t.completed),
+    (filteredTasks.value || []).length > 0 &&
+    filteredTasks.value.every((t) => t.finished),
   set: (val: boolean) => {
-    filteredTasks.value.forEach((t) => (t.completed = val))
+    (filteredTasks.value || []).forEach((t) => (t.finished = val))
   }
 })
 
-// Funções de ação rápida
 const markSelectedAsComplete = () => {
-  tasks.value.forEach((t) => {
-    if (t.completed) {
-      t.completed = true
+  (tasks.value || []).forEach((t) => {
+    if (t.finished) {
+      t.finished = true
     }
   })
 }
 
 const deleteSelected = () => {
-  tasks.value = tasks.value.filter((t) => !t.completed)
+  tasks.value = (tasks.value || []).filter((t) => !t.finished)
 }
 
-const addNewTask = (payload: NewTaskPayload) => {
-  const newTask: TaskItem = {
-    id: Date.now(),
-    name: payload.name,
+const addNewTask = (payload: Task) => {
+  const newTask: Task = {
+    id: String(Date.now()),
+    title: payload.title,
     category: payload.category,
     priority: payload.priority,
-    date: payload.dueDate || payload.createdDate,
-    dateExpire: payload.dueDate || payload.createdDate,
-    completed: false
+    startDate: payload.startDate,
+    endDate: payload.endDate,
+    finished: payload.finished ?? false,
   }
   tasks.value.unshift(newTask)
 }
+
+const fetchTasks = async () => {
+  try {
+    const response = await TaskService.getTasks()
+    console.log(response)
+    tasks.value = response ?? []
+  } catch (error) {
+    console.error('Error fetching tasks:', error)
+  }
+}
+
+onMounted(() => {
+  fetchTasks()
+})
 
 defineExpose({
   addNewTask
@@ -211,12 +156,12 @@ defineExpose({
             v-for="task in filteredTasks"
             :key="task.id"
             class="transition hover:bg-slate-50"
-            :class="{ 'bg-emerald-50/50 hover:bg-emerald-50!': task.completed }"
+            :class="{ 'bg-emerald-50/50 hover:bg-emerald-50!': task.finished }"
           >
             <td class="text-center py-3.5 px-3">
               <input
                 type="checkbox"
-                v-model="task.completed"
+                v-model="task.finished"
                 class="w-4 h-4 border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer accent-emerald-600"
               />
             </td>
@@ -224,9 +169,9 @@ defineExpose({
               <div class="flex items-center gap-2.5 flex-wrap">
                 <span
                   class="text-slate-800 font-medium"
-                  :class="{ 'text-slate-400 line-through': task.completed }"
+                  :class="{ 'text-slate-400 line-through': task.finished }"
                 >
-                  {{ task.name }}
+                  {{ task.title }}
                 </span>
               </div>
             </td>
@@ -248,10 +193,10 @@ defineExpose({
               </span>
             </td>
             <td class="py-3.5 px-4 text-center text-slate-500 text-xs font-medium">
-              {{ task.date }}
+              {{ task.startDate }}
             </td>
             <td class="py-3.5 px-4 text-center text-slate-500 text-xs font-medium">
-              {{ task.dateExpire }}
+              {{ task.endDate }}
             </td>
           </tr>
 

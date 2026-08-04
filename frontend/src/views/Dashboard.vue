@@ -2,15 +2,16 @@
 import { ref } from 'vue'
 import { Plus } from 'lucide-vue-next'
 import Table from '../components/Table.vue'
-import CreateTask, { type NewTaskPayload } from '../components/CreateTask.vue'
+import CreateTask from '../components/CreateTask.vue'
 import Header from '../components/Header.vue'
 import { Button } from '@/components/ui/button'
+import type { Task } from '@/api/TaskService'
 
 const searchQuery = ref('')
 const showCreateModal = ref(false)
 const tableRef = ref<InstanceType<typeof Table> | null>(null)
 
-const handleTaskCreated = (payload: NewTaskPayload) => {
+const handleTaskCreated = (payload: Task) => {
   if (tableRef.value) {
     tableRef.value.addNewTask(payload)
   }
