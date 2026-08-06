@@ -6,7 +6,7 @@ export interface Task {
     category: string;
     priority: string;
     startDate: string;
-    endDate: string;
+    endDate: string | null;
     finished: boolean;
 }
 
@@ -47,6 +47,12 @@ export class TaskService {
         return response.createTask;
     }
 
-
-
+    static async deleteTask(taskId: string): Promise<void> {
+        const mutation = `
+            mutation DeleteTask($taskId: String!) {
+                deleteTask(taskId: $taskId)
+            }
+        `;
+        await fetchGraphQL(mutation, { taskId });
+    }
 }

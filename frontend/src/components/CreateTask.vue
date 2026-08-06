@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { Task} from '@/api/TaskService'
+import { type Task, TaskService } from '@/api/TaskService'
 
 
 const props = defineProps<{
@@ -40,19 +40,17 @@ const createdDate = ref(today)
 const dueDate = ref('')
 
 const categoryOptions = [
-  { value: 'Documentação', text: 'Documentação' },
-  { value: 'Code Review', text: 'Code Review' },
-  { value: 'Infraestrutura', text: 'Infraestrutura' },
-  { value: 'Design', text: 'Design' },
-  { value: 'DevOps', text: 'DevOps' },
-  { value: 'Testes', text: 'Testes' },
-  { value: 'Outros', text: 'Outros' }
+  { value: 'documents', text: 'Documentação' },
+  { value: 'codeReview', text: 'Code Review' },
+  { value: 'test', text: 'Testes' },
+  { value: 'design', text: 'Design' },
+  { value: 'other', text: 'Outros' }
 ]
 
 const priorityOptions = [
-  { value: 'Alta', text: 'Alta' },
-  { value: 'Normal', text: 'Normal' },
-  { value: 'Baixa', text: 'Baixa' }
+  { value: 'low', text: 'Baixa' },
+  { value: 'medium', text: 'Normal' },
+  { value: 'high', text: 'Alta' }
 ]
 
 const isVisible = ref(props.modelValue)
@@ -76,23 +74,23 @@ const resetForm = () => {
   dueDate.value = ''
 }
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
   if (!name.value.trim()) return
 
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return ''
-    const [year, month, day] = dateStr.split('-')
-    return `${day}/${month}/${year}`
-  }
+  try {
+    const newTask = await TaskService.createTask({
+      title: name.value,
+      category: category.value,
+      priority: priority.value,
+      startDate: createdDate.value,
+      endDate: dueDate.value,
+      finished: false
+    })
 
-  emit('create-task', {
-    title: name.value,
-    category: category.value,
-    priority: priority.value,
-    startDate: formatDate(createdDate.value),
-    endDate: formatDate(dueDate.value),
-    finished: false
-  })
+    emit('create-task', newTask)
+  } catch (e: any) {
+    console.log('Error when trying to create a task: ', e)
+  }
 
   resetForm()
   isVisible.value = false

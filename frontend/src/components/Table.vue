@@ -7,6 +7,7 @@ import {
 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { TaskService, type Task} from '@/api/TaskService.ts'
+import { formatDate } from '@/lib/utils'
 
 const props = withDefaults(
   defineProps<{
@@ -16,7 +17,28 @@ const props = withDefaults(
     searchQuery: ''
   }
 )
-const tasks = ref<Task[]>([])
+// const tasks = ref<Task[]>([])
+
+const tasks = ref<Task[]>([
+  {
+    id: '1',
+    title: 'Task 1',
+    category: 'Teste',
+    priority: 'Baixa',
+    startDate: '2022-01-01T00:00:00.000Z',
+    endDate: null,
+    finished: false,
+  },
+  {
+    id: '2',
+    title: 'Task 2',
+    category: 'Teste',
+    priority: 'Normal',
+    startDate: '2022-01-03T00:00:00.000Z',
+    endDate: '2022-01-04T00:00:00.000Z',
+    finished: true,
+  },
+])
 
 const filteredTasks = computed(() => {
   if (!tasks.value) return []
@@ -193,10 +215,10 @@ defineExpose({
               </span>
             </td>
             <td class="py-3.5 px-4 text-center text-slate-500 text-xs font-medium">
-              {{ task.startDate }}
+              {{ formatDate(task.startDate) }}
             </td>
             <td class="py-3.5 px-4 text-center text-slate-500 text-xs font-medium">
-              {{ task.endDate }}
+              {{ task.endDate ? formatDate(task.endDate) : '-' }}
             </td>
           </tr>
 

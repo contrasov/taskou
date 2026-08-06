@@ -1,7 +1,7 @@
 import { InputType, Field } from "@nestjs/graphql";
 
 enum Category {
-    documents = 'documentação',
+    documents = 'Documentação',
     codeReview = 'Code Review',
     test = 'Teste',
     design = 'Design',
